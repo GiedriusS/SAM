@@ -10,4 +10,4 @@ route:
 receivers:
 - name: 'web.hook'
   webhook_configs:
-  - url: 'http://127.0.0.1:9097/webhook'
+  - url: 'http://alertmanager2es:9097/webhook'

@@ -6,12 +6,13 @@ services:
      - "9300:9300"
     environment:
      - "discovery.type=single-node"
-    image: "docker.elastic.co/elasticsearch/elasticsearch:6.4.2"
+     - "xpack.security.enabled=false"
+    image: "docker.elastic.co/elasticsearch/elasticsearch:5.6.12"
   alertmanager2es:
     image: "simonpasquier/alertmanager2es"
     ports:
      - "9097:9097"
-    command: "-esURL \"http://localhost:9200\" -addr \":9097\""
+    command: "-esURL \"http://elasticsearch:9200\" -addr \":9097\""
   alertmanager:
     image: "prom/alertmanager"
     ports:
