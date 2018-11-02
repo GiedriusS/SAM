@@ -11,7 +11,7 @@ services:
     image: "simonpasquier/alertmanager2es"
     ports:
      - "9097:9097"
-    command: "-esURL \"http://localhost:9200\""
+    command: "-esURL \"http://localhost:9200\" -addr \":9097\""
   alertmanager:
     image: "prom/alertmanager"
     ports:
