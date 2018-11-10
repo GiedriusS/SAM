@@ -5,8 +5,9 @@ services:
      - "9200:9200"
      - "9300:9300"
     environment:
-     - "discovery.type=single-node"
-     - "xpack.security.enabled=false"
+      ES_JAVA_OPTS: "-Xms750m -Xmx750m"
+      xpack.security.enabled: "false"
+      discovery.type: "single-node"
     image: "docker.elastic.co/elasticsearch/elasticsearch:5.6.12"
   alertmanager2es:
     image: "simonpasquier/alertmanager2es"
@@ -23,3 +24,9 @@ services:
     image: "bitnami/redis"
     environment:
      - "ALLOW_EMPTY_PASSWORD=yes"
+    ports:
+     - "6379:6379"
+  kibana:
+    image: "docker.elastic.co/kibana/kibana:5.6.12"
+    ports:
+     - "5601:5601"
