@@ -13,6 +13,7 @@ package alerts
 
 import (
 	"crypto/sha256"
+	"sort"
 	"time"
 )
 
@@ -42,24 +43,25 @@ func (a *Alert) Hash() string {
 // RetrievedAlerts is a wrapper around retrieved data which implements sort.Interface
 type RetrievedAlerts struct {
 	Alerts []Alert
+	sort.Interface
 }
 
 // Len is part of sort.Interface for RetrievedAlerts
-func (ra *RetrievedAlerts) Len() int {
+func (ra RetrievedAlerts) Len() int {
 	return len(ra.Alerts)
 }
 
 // Swap is part of sort.Interface for RetrievedAlerts
-func (ra *RetrievedAlerts) Swap(i, j int) {
+func (ra RetrievedAlerts) Swap(i, j int) {
 	ra.Alerts[i], ra.Alerts[j] = ra.Alerts[j], ra.Alerts[i]
 }
 
 // Less is part of sort.Interface. Sorted by StartsAt.
-func (ra *RetrievedAlerts) Less(i, j int) bool {
+func (ra RetrievedAlerts) Less(i, j int) bool {
 	return ra.Alerts[i].StartsAt.Before(ra.Alerts[j].StartsAt)
 }
 
 // AlertSource is an interface for all alerts sources
 type AlertSource interface {
-	GetAlertsFromTo(from, to time.Time) ([]Alert, error)
+	GetAlertsFromTo(status string, UntilEndsAt time.Time) (RetrievedAlerts, error)
 }
