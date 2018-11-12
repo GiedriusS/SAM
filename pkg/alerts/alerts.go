@@ -19,15 +19,29 @@ import (
 
 // Alert stores the necessary data of one alert
 type Alert struct {
-	Labels   map[string]string // Labels identify the alert
-	StartsAt time.Time
-	EndsAt   time.Time
-	Related  map[string]uint
+	Annotations  map[string]string `json:"annotations"`
+	EndsAt       string            `json:"endsAt"`
+	GeneratorURL string            `json:"generatorURL"`
+	Labels       map[string]string `json:"labels"`
+	StartsAt     string            `json:"startAt"`
+	Status       string            `jsom:"status"`
 }
 
 // NewAlert constructs a new Alert object
 func NewAlert() Alert {
-	return Alert{Labels: make(map[string]string), Related: make(map[string]uint)}
+	return Alert{Labels: make(map[string]string), Annotations: make(map[string]string)}
+}
+
+// Starts parses StartsAt and retrieves time.Time
+func (a *Alert) Starts() time.Time {
+	starts, _ := time.Parse("0001-01-01T00:00:00Z", a.StartsAt)
+	return starts
+}
+
+// Ends parses EndsAt and retrieves time.Time
+func (a *Alert) Ends() time.Time {
+	ends, _ := time.Parse("0001-01-01T00:00:00Z", a.EndsAt)
+	return ends
 }
 
 // Hash calculates the alert's hash. Used to identify identical alerts.
@@ -58,7 +72,7 @@ func (ra RetrievedAlerts) Swap(i, j int) {
 
 // Less is part of sort.Interface. Sorted by StartsAt.
 func (ra RetrievedAlerts) Less(i, j int) bool {
-	return ra.Alerts[i].StartsAt.Before(ra.Alerts[j].StartsAt)
+	return ra.Alerts[i].Starts().Before(ra.Alerts[j].Ends())
 }
 
 // AlertSource is an interface for all alerts sources
