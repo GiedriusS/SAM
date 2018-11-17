@@ -5,9 +5,7 @@ similar alerts.
 Honestly, maybe one can make a smarter algorithm but this algorithm at least is simple and understandable.
 It is O(n^2) where n is the number of alerts. Sort all data by StartsAt.
 Go through each alert and go forward while StartAt is equal, and backwards while StartsAt is lower or equal
-to the current one. Only retrieve resolved alerts to reduce the noise. Retrieve alerts with the EndsAt bound.
-
-Save all data in a hash -> Alert structure.
+to the current one. Only retrieve resolved alerts to reduce the noise.
 */
 package alerts
 
@@ -58,6 +56,7 @@ func (a *Alert) Hash() string {
 type RetrievedAlerts struct {
 	Alerts []Alert
 	sort.Interface
+	Related map[string]uint
 }
 
 // Len is part of sort.Interface for RetrievedAlerts
@@ -77,5 +76,5 @@ func (ra RetrievedAlerts) Less(i, j int) bool {
 
 // AlertSource is an interface for all alerts sources
 type AlertSource interface {
-	GetAlertsFromTo(status string, UntilEndsAt time.Time) (RetrievedAlerts, error)
+	GetAlertsFromTo(status string, StartsAt, EndsAt time.Time) (RetrievedAlerts, error)
 }

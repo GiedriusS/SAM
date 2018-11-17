@@ -31,11 +31,12 @@ func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Lo
 	return ElasticSearchSource{index: index, client: client, logger: logger}, nil
 }
 
-// GetAlertsFromTo retrieves the alerts with specified status where EndsAt <= UntilEndsAt
-func (es ElasticSearchSource) GetAlertsFromTo(status string, UntilEndsAt time.Time) (RetrievedAlerts, error) {
+// GetAlertsFromTo retrieves the alerts with specified status between specified boundaries
+func (es ElasticSearchSource) GetAlertsFromTo(status string, StartsAt, EndsAt time.Time) (RetrievedAlerts, error) {
 	t := elastic.NewTermQuery("status", status)
-	r := elastic.NewRangeQuery("alerts.endsAt").Lt(UntilEndsAt)
-	q := elastic.NewBoolQuery().Must(t).Must(r)
+	e := elastic.NewRangeQuery("alerts.endsAt").Lt(EndsAt)
+	s := elastic.NewRangeQuery("alerts.startsAt").Gt(StartsAt)
+	q := elastic.NewBoolQuery().Must(t).Must(e).Must(s)
 
 	searchResult, err := es.client.Search().
 		Index(es.index).
