@@ -17,7 +17,8 @@ func TestGetAlertsFromTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to setup elastic alert source: %v", err)
 	}
-	alerts, err := alertsource.GetAlertsFromTo("resolved", time.Now().Add(99999*time.Second))
+	alerts, err := alertsource.GetAlertsFromTo("resolved", time.Now(),
+		time.Now().Add(99999*time.Second))
 	if err != nil {
 		t.Fatalf("failed to get related alerts: %v", err)
 	}

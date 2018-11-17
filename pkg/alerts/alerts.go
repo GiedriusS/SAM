@@ -23,6 +23,7 @@ type Alert struct {
 	Labels       map[string]string `json:"labels"`
 	StartsAt     string            `json:"startsAt"`
 	Status       string            `json:"status"`
+	Related      map[string]string
 }
 
 // NewAlert constructs a new Alert object
@@ -52,29 +53,29 @@ func (a *Alert) Hash() string {
 	return string(h.Sum(nil))
 }
 
-// RetrievedAlerts is a wrapper around retrieved data which implements sort.Interface
-type RetrievedAlerts struct {
+// AugmentedAlerts is a wrapper around retrieved data which implements sort.Interface and
+// stores all information about the current state of alerts.
+type AugmentedAlerts struct {
 	Alerts []Alert
 	sort.Interface
-	Related map[string]uint
 }
 
-// Len is part of sort.Interface for RetrievedAlerts
-func (ra RetrievedAlerts) Len() int {
-	return len(ra.Alerts)
+// Len is part of sort.Interface for AugmentedAlerts
+func (aa AugmentedAlerts) Len() int {
+	return len(aa.Alerts)
 }
 
-// Swap is part of sort.Interface for RetrievedAlerts
-func (ra RetrievedAlerts) Swap(i, j int) {
-	ra.Alerts[i], ra.Alerts[j] = ra.Alerts[j], ra.Alerts[i]
+// Swap is part of sort.Interface for AugmentedAlerts
+func (aa AugmentedAlerts) Swap(i, j int) {
+	aa.Alerts[i], aa.Alerts[j] = aa.Alerts[j], aa.Alerts[i]
 }
 
 // Less is part of sort.Interface. Sorted by StartsAt.
-func (ra RetrievedAlerts) Less(i, j int) bool {
-	return ra.Alerts[i].Starts().Before(ra.Alerts[j].Ends())
+func (aa AugmentedAlerts) Less(i, j int) bool {
+	return aa.Alerts[i].Starts().Before(aa.Alerts[j].Ends())
 }
 
 // AlertSource is an interface for all alerts sources
 type AlertSource interface {
-	GetAlertsFromTo(status string, StartsAt, EndsAt time.Time) (RetrievedAlerts, error)
+	GetAlertsFromTo(status string, StartsAt, EndsAt time.Time) (AugmentedAlerts, error)
 }

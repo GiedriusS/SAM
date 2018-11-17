@@ -32,7 +32,7 @@ func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Lo
 }
 
 // GetAlertsFromTo retrieves the alerts with specified status between specified boundaries
-func (es ElasticSearchSource) GetAlertsFromTo(status string, StartsAt, EndsAt time.Time) (RetrievedAlerts, error) {
+func (es ElasticSearchSource) GetAlertsFromTo(status string, StartsAt, EndsAt time.Time) (AugmentedAlerts, error) {
 	t := elastic.NewTermQuery("status", status)
 	e := elastic.NewRangeQuery("alerts.endsAt").Lt(EndsAt)
 	s := elastic.NewRangeQuery("alerts.startsAt").Gt(StartsAt)
@@ -44,18 +44,18 @@ func (es ElasticSearchSource) GetAlertsFromTo(status string, StartsAt, EndsAt ti
 		Do(context.Background())
 
 	if err != nil {
-		return RetrievedAlerts{}, err
+		return AugmentedAlerts{}, err
 	}
 
 	if searchResult.Hits.TotalHits == 0 {
-		return RetrievedAlerts{}, nil
+		return AugmentedAlerts{}, nil
 	}
 
-	ret := RetrievedAlerts{}
+	ret := AugmentedAlerts{}
 	for _, hit := range searchResult.Hits.Hits {
 		var a Alert
 		if err := json.Unmarshal(*hit.Source, &a); err != nil {
-			return RetrievedAlerts{}, fmt.Errorf("failed to unmarshal alert: %v", err)
+			return AugmentedAlerts{}, fmt.Errorf("failed to unmarshal alert: %v", err)
 		}
 
 		ret.Alerts = append(ret.Alerts, a)
