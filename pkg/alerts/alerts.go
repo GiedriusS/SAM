@@ -23,8 +23,8 @@ type Alert struct {
 	EndsAt       string            `json:"endsAt"`
 	GeneratorURL string            `json:"generatorURL"`
 	Labels       map[string]string `json:"labels"`
-	StartsAt     string            `json:"startAt"`
-	Status       string            `jsom:"status"`
+	StartsAt     string            `json:"startsAt"`
+	Status       string            `json:"status"`
 }
 
 // NewAlert constructs a new Alert object
