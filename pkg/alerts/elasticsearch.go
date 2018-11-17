@@ -10,7 +10,7 @@ import (
 	"gopkg.in/olivere/elastic.v5"
 )
 
-// ElasticSearchSource represents ElasticSearch as a source for alerts
+// ElasticSearchSource represents ElasticSearch as a source for alerts.
 type ElasticSearchSource struct {
 	AlertSource
 
@@ -19,7 +19,7 @@ type ElasticSearchSource struct {
 	index  string
 }
 
-// NewElasticSearchSource returns a new ElasticSearchSource
+// NewElasticSearchSource returns a new ElasticSearchSource.
 func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Logger) (ElasticSearchSource, error) {
 	if logger == nil {
 		l, err := zap.NewProduction()
@@ -31,11 +31,11 @@ func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Lo
 	return ElasticSearchSource{index: index, client: client, logger: logger}, nil
 }
 
-// GetAlertsFromTo retrieves the alerts with specified status between specified boundaries
-func (es ElasticSearchSource) GetAlertsFromTo(status string, StartsAt, EndsAt time.Time) (AugmentedAlerts, error) {
+// GetAlertsFromTo retrieves the alerts with specified status between specified boundaries.
+func (es ElasticSearchSource) GetAlertsFromTo(status string, from, to time.Time) (AugmentedAlerts, error) {
 	t := elastic.NewTermQuery("status", status)
-	e := elastic.NewRangeQuery("alerts.endsAt").Lt(EndsAt)
-	s := elastic.NewRangeQuery("alerts.startsAt").Gt(StartsAt)
+	e := elastic.NewRangeQuery("alerts.endsAt").Lt(to)
+	s := elastic.NewRangeQuery("alerts.startsAt").Gt(from)
 	q := elastic.NewBoolQuery().Must(t).Must(e).Must(s)
 
 	searchResult, err := es.client.Search().

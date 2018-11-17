@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// Alert stores the necessary data of one alert
+// Alert stores the necessary data of one alert.
 type Alert struct {
 	Annotations  map[string]string `json:"annotations"`
 	EndsAt       string            `json:"endsAt"`
@@ -23,21 +23,24 @@ type Alert struct {
 	Labels       map[string]string `json:"labels"`
 	StartsAt     string            `json:"startsAt"`
 	Status       string            `json:"status"`
-	Related      map[string]string
+	Related      map[string]uint
 }
 
-// NewAlert constructs a new Alert object
+// NewAlert constructs a new Alert object.
 func NewAlert() Alert {
-	return Alert{Labels: make(map[string]string), Annotations: make(map[string]string)}
+	return Alert{Labels: make(map[string]string),
+		Annotations: make(map[string]string),
+		Related:     make(map[string]uint),
+	}
 }
 
-// Starts parses StartsAt and retrieves time.Time
+// Starts parses StartsAt and retrieves time.Time.
 func (a *Alert) Starts() time.Time {
 	starts, _ := time.Parse("0001-01-01T00:00:00Z", a.StartsAt)
 	return starts
 }
 
-// Ends parses EndsAt and retrieves time.Time
+// Ends parses EndsAt and retrieves time.Time.
 func (a *Alert) Ends() time.Time {
 	ends, _ := time.Parse("0001-01-01T00:00:00Z", a.EndsAt)
 	return ends
@@ -58,14 +61,15 @@ func (a *Alert) Hash() string {
 type AugmentedAlerts struct {
 	Alerts []Alert
 	sort.Interface
+	LastTimestamp time.Time
 }
 
-// Len is part of sort.Interface for AugmentedAlerts
+// Len is part of sort.Interface for AugmentedAlerts.
 func (aa AugmentedAlerts) Len() int {
 	return len(aa.Alerts)
 }
 
-// Swap is part of sort.Interface for AugmentedAlerts
+// Swap is part of sort.Interface for AugmentedAlerts.
 func (aa AugmentedAlerts) Swap(i, j int) {
 	aa.Alerts[i], aa.Alerts[j] = aa.Alerts[j], aa.Alerts[i]
 }
@@ -75,7 +79,36 @@ func (aa AugmentedAlerts) Less(i, j int) bool {
 	return aa.Alerts[i].Starts().Before(aa.Alerts[j].Ends())
 }
 
-// AlertSource is an interface for all alerts sources
+// Merge merges the specified AugmentedAlerts into the current one.
+func (aa *AugmentedAlerts) Merge(src *AugmentedAlerts) error {
+	for _, v := range src.Alerts {
+		aa.Alerts = append(aa.Alerts, v)
+	}
+	aa.LastTimestamp = src.LastTimestamp
+	return nil
+}
+
+// CalculateRelated calculates related alerts in augmented alerts.
+// Invoke it before merging.
+func (aa *AugmentedAlerts) CalculateRelated() error {
+	sort.Sort(*aa)
+	for k, v := range aa.Alerts {
+		now := k
+		for now < len(aa.Alerts) && aa.Alerts[now].StartsAt == aa.Alerts[k].StartsAt {
+			v.Related[aa.Alerts[now].Hash()]++
+			now++
+		}
+
+		now = k
+		for now >= 0 {
+			v.Related[aa.Alerts[now].Hash()]++
+			now--
+		}
+	}
+	return nil
+}
+
+// AlertSource is an interface for all alerts sources.
 type AlertSource interface {
 	GetAlertsFromTo(status string, StartsAt, EndsAt time.Time) (AugmentedAlerts, error)
 }
