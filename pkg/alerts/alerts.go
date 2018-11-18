@@ -94,7 +94,7 @@ func (aa *AugmentedAlerts) CalculateRelated() error {
 	sort.Sort(*aa)
 	for k, v := range aa.Alerts {
 		now := k
-		for now < len(aa.Alerts) && aa.Alerts[now].StartsAt == aa.Alerts[k].StartsAt {
+		for now < len(aa.Alerts) && aa.Alerts[now].Starts() == aa.Alerts[k].Starts() {
 			v.Related[aa.Alerts[now].Hash()]++
 			now++
 		}
