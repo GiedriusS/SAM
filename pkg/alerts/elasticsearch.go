@@ -34,8 +34,8 @@ func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Lo
 // GetAlertsFromTo retrieves the alerts with specified status between specified boundaries.
 func (es ElasticSearchSource) GetAlertsFromTo(status string, from, to time.Time) (AugmentedAlerts, error) {
 	t := elastic.NewTermQuery("status", status)
-	e := elastic.NewRangeQuery("alerts.endsAt").Lt(to)
-	s := elastic.NewRangeQuery("alerts.startsAt").Gt(from)
+	e := elastic.NewRangeQuery("@timestamp").Lt(to)
+	s := elastic.NewRangeQuery("@timestamp").Gt(from)
 	q := elastic.NewBoolQuery().Must(t).Must(e).Must(s)
 
 	searchResult, err := es.client.Search().
