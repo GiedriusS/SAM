@@ -23,7 +23,7 @@ type Alert struct {
 	Labels       map[string]string `json:"labels"`
 	StartsAt     string            `json:"startsAt"`
 	Status       string            `json:"status"`
-	Related      map[string]uint
+	Related      map[string]uint   `json:"-"`
 }
 
 // NewAlert constructs a new Alert object.
@@ -35,7 +35,7 @@ func NewAlert() Alert {
 }
 
 // TimeFormat is the time format of alert boundaries
-const TimeFormat = "0001-01-01T00:00:00Z"
+const TimeFormat = time.RFC3339
 
 // Starts parses StartsAt and retrieves time.Time.
 func (a *Alert) Starts() time.Time {

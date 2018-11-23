@@ -10,6 +10,22 @@ import (
 	"gopkg.in/olivere/elastic.v5"
 )
 
+// This is the type that alertmanager2es uses.
+type notification struct {
+	Alerts            []Alert           `json:"alerts"`
+	CommonAnnotations map[string]string `json:"commonAnnotations"`
+	CommonLabels      map[string]string `json:"commonLabels"`
+	ExternalURL       string            `json:"externalURL"`
+	GroupLabels       map[string]string `json:"groupLabels"`
+	Receiver          string            `json:"receiver"`
+	Status            string            `json:"status"`
+	Version           string            `json:"version"`
+	GroupKey          string            `json:"groupKey"`
+
+	// Timestamp records when the alert notification was received
+	Timestamp string `json:"@timestamp"`
+}
+
 // ElasticSearchSource represents ElasticSearch as a source for alerts.
 type ElasticSearchSource struct {
 	AlertSource
@@ -34,9 +50,9 @@ func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Lo
 // GetAlertsFromTo retrieves the alerts with specified status between specified boundaries.
 func (es ElasticSearchSource) GetAlertsFromTo(status string, from, to time.Time) (AugmentedAlerts, error) {
 	t := elastic.NewTermQuery("status", status)
-	e := elastic.NewRangeQuery("@timestamp").Lt(to)
-	s := elastic.NewRangeQuery("@timestamp").Gt(from)
-	q := elastic.NewBoolQuery().Must(t).Must(e).Must(s)
+	q := elastic.NewBoolQuery().Must(t).Filter(
+		elastic.NewRangeQuery("@timestamp").From(from).
+			To(to))
 
 	searchResult, err := es.client.Search().
 		Index(es.index).
@@ -53,12 +69,14 @@ func (es ElasticSearchSource) GetAlertsFromTo(status string, from, to time.Time)
 
 	ret := AugmentedAlerts{}
 	for _, hit := range searchResult.Hits.Hits {
-		var a Alert
-		if err := json.Unmarshal(*hit.Source, &a); err != nil {
-			return AugmentedAlerts{}, fmt.Errorf("failed to unmarshal alert: %v", err)
+		var n notification
+		if err := json.Unmarshal(*hit.Source, &n); err != nil {
+			return AugmentedAlerts{}, fmt.Errorf("failed to unmarshal notification: %v", err)
 		}
 
-		ret.Alerts = append(ret.Alerts, a)
+		for _, a := range n.Alerts {
+			ret.Alerts = append(ret.Alerts, a)
+		}
 	}
 
 	return ret, nil
