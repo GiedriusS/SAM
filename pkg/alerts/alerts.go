@@ -18,10 +18,10 @@ import (
 // Alert stores the necessary data of one alert.
 type Alert struct {
 	Annotations  map[string]string `json:"annotations"`
+	StartsAt     string            `json:"startsAt"`
 	EndsAt       string            `json:"endsAt"`
 	GeneratorURL string            `json:"generatorURL"`
 	Labels       map[string]string `json:"labels"`
-	StartsAt     string            `json:"startsAt"`
 	Status       string            `json:"status"`
 	Related      map[string]uint   `json:"-"`
 }
@@ -79,7 +79,7 @@ func (aa AugmentedAlerts) Swap(i, j int) {
 
 // Less is part of sort.Interface. Sorted by StartsAt.
 func (aa AugmentedAlerts) Less(i, j int) bool {
-	return aa.Alerts[i].Starts().Before(aa.Alerts[j].Ends())
+	return aa.Alerts[i].Starts().Before(aa.Alerts[j].Starts())
 }
 
 // Merge merges the specified AugmentedAlerts into the current one.

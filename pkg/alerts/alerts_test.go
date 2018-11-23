@@ -8,13 +8,13 @@ import (
 func TestCalculateRelated(t *testing.T) {
 	alert1 := NewAlert()
 	alert1.Labels["a"] = "b"
-	alert1.EndsAt = "0001-01-01T00:00:10Z"
-	alert1.StartsAt = "0001-01-01T00:00:00Z"
+	alert1.StartsAt = time.Now().Format(TimeFormat)
+	alert1.EndsAt = time.Now().Add(10 * time.Second).Format(TimeFormat)
 
 	alert2 := NewAlert()
 	alert2.Labels["b"] = "a"
-	alert2.EndsAt = "0001-01-01T00:00:05Z"
-	alert2.StartsAt = "0001-01-01T00:00:01Z"
+	alert2.StartsAt = time.Now().Add(1 * time.Second).Format(TimeFormat)
+	alert2.EndsAt = time.Now().Add(5 * time.Second).Format(TimeFormat)
 
 	data := AugmentedAlerts{
 		Alerts:        []Alert{alert1, alert2},
