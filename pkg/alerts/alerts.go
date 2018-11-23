@@ -34,15 +34,18 @@ func NewAlert() Alert {
 	}
 }
 
+// TimeFormat is the time format of alert boundaries
+const TimeFormat = "0001-01-01T00:00:00Z"
+
 // Starts parses StartsAt and retrieves time.Time.
 func (a *Alert) Starts() time.Time {
-	starts, _ := time.Parse("0001-01-01T00:00:00Z", a.StartsAt)
+	starts, _ := time.Parse(TimeFormat, a.StartsAt)
 	return starts
 }
 
 // Ends parses EndsAt and retrieves time.Time.
 func (a *Alert) Ends() time.Time {
-	ends, _ := time.Parse("0001-01-01T00:00:00Z", a.EndsAt)
+	ends, _ := time.Parse(TimeFormat, a.EndsAt)
 	return ends
 }
 
