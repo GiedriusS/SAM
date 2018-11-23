@@ -27,10 +27,12 @@ func TestGetAlertsFromTo(t *testing.T) {
 	alert2.EndsAt = startTs.Add(3 * time.Second).Format(TimeFormat)
 	alert2.StartsAt = startTs.Add(1 * time.Second).Format(TimeFormat)
 
-	n1 := notification{Alerts: []Alert{alert1}, Status: "resolved",
-		Timestamp: startTs.Format(TimeFormat)}
-	n2 := notification{Alerts: []Alert{alert2}, Status: "resolved",
-		Timestamp: startTs.Format(TimeFormat)}
+	notifications := []notification{
+		notification{Alerts: []Alert{alert1}, Status: "resolved",
+			Timestamp: startTs.Format(TimeFormat)},
+		notification{Alerts: []Alert{alert2}, Status: "resolved",
+			Timestamp: startTs.Format(TimeFormat)},
+	}
 
 	esclient, err := elastic.NewSimpleClient(elastic.SetURL("http://127.0.0.1:9200"))
 	if err != nil {
@@ -40,16 +42,15 @@ func TestGetAlertsFromTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to setup elastic alert source: %v", err)
 	}
-	err = addNotification(esclient, &n1, indexName)
-	if err != nil {
-		t.Fatalf("failed to add the alert #1: %v", err)
+	for _, n := range notifications {
+		err = addNotification(esclient, &n, indexName)
+		if err != nil {
+			t.Fatalf("failed to add alert: %v", err)
+		}
 	}
-	err = addNotification(esclient, &n2, indexName)
-	if err != nil {
-		t.Fatalf("failed to add the alert #2: %v", err)
-	}
-	alerts, err := alertsource.GetAlertsFromTo("resolved", startTs.Add(-10*time.Second),
-		time.Now().Add(99999*time.Second))
+	// TODO(g-statkevicius): the ranges look bad here
+	alerts, err := alertsource.GetAlertsFromTo("resolved",
+		startTs.Add(-15*time.Second), startTs.Add(15*time.Second))
 	if err != nil {
 		t.Fatalf("failed to get related alerts: %v", err)
 	}
