@@ -4,6 +4,7 @@ go:
 services:
   - docker
 before_install:
+  - go vet ./...
   - docker-compose -f ./docker/docker-compose-test.yml up -d
   - sleep 30
   - ./scripts/add_es_template.sh
