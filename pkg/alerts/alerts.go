@@ -29,18 +29,6 @@ func NewAlert() Alert {
 // TimeFormat is the time format of alert boundaries
 const TimeFormat = time.RFC3339
 
-// Starts parses StartsAt and retrieves time.Time.
-func (a *Alert) Starts() time.Time {
-	starts, _ := time.Parse(TimeFormat, a.StartsAt)
-	return starts
-}
-
-// Ends parses EndsAt and retrieves time.Time.
-func (a *Alert) Ends() time.Time {
-	ends, _ := time.Parse(TimeFormat, a.EndsAt)
-	return ends
-}
-
 // Hash calculates the alert's hash. Used to identify identical alerts.
 func (a *Alert) Hash() string {
 	h := sha256.New()
