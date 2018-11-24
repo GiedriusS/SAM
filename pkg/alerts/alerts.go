@@ -58,13 +58,16 @@ type AlertSource interface {
 
 // State is the current state of the alerts parser.
 type State struct {
-	Firing []string
-	Alerts map[string]*Alert
+	Firing      []string
+	Alerts      map[string]*Alert
+	LastUpdated time.Time
 }
 
 // NewState initializes a new State variable.
 func NewState() State {
-	return State{Firing: []string{}, Alerts: make(map[string]*Alert)}
+	return State{Firing: []string{},
+		Alerts: make(map[string]*Alert),
+	}
 }
 
 // AddAlert adds alert to the state if it does not exist already.

@@ -1,55 +1,27 @@
 package alerts
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
 	elastic "gopkg.in/olivere/elastic.v5"
 )
 
-var alert1 = `
-{
-	  "alerts": [
-		{
-		  "annotations": {
-			"info": "The disk sda1 is running full",
-			"summary": "please check the instance example1"
-		  },
-		  "endsAt": "0001-01-01T00:00:00Z",
-		  "generatorURL": "",
-		  "labels": {
-			"alertname": "DiskRunningFull",
-			"dev": "sda1",
-			"instance": "example1"
-		  },
-		  "startsAt": "2018-11-24T21:19:34.3730271Z",
-		  "status": "firing"
-		}
-	  ],
-	  "commonAnnotations": {
-		"info": "The disk sda1 is running full",
-		"summary": "please check the instance example1"
-	  },
-	  "commonLabels": {
-		"alertname": "DiskRunningFull",
-		"dev": "sda1",
-		"instance": "example1"
-	  },
-	  "externalURL": "http://ce1fa40d0cb5:9093",
-	  "groupLabels": {
-		"alertname": "DiskRunningFull"
-	  },
-	  "receiver": "web\\.hook",
-	  "status": "firing",
-	  "version": "4",
-	  "groupKey": "{}:{alertname=\"DiskRunningFull\"}"
-}
-`
-
 // addNotification adds a new notification to a index using the client.
 func addNotification(c *elastic.Client, n *notification, index string) error {
 	_, err := c.Index().Index(index).Type("alert_group").BodyJson(*n).Do(context.Background())
+
+	b, err := json.Marshal(n)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.PerformRequestWithContentType(context.Background(), "POST",
+		fmt.Sprintf("/%s/%s", index, "alert_group"), nil, bytes.NewBuffer(b), "application/json")
 	return err
 }
 
@@ -60,10 +32,11 @@ func TestGetAlertsFromTo(t *testing.T) {
 
 	alert1 := NewAlert()
 	alert1.StartsAt = startTs.Format(TimeFormat)
-	alert1.EndsAt = startTs.Add(1 * time.Second).Format(TimeFormat)
+	alert1.EndsAt = startTs.Format(TimeFormat)
+	alert1.Status = "resolved"
 	alert1.Labels["a"] = "b"
 
-	n := notification{Alerts: []Alert{alert1}, Status: "resolved", Timestamp: startTs}
+	n := notification{Alerts: []Alert{alert1}, Timestamp: startTs.Format(time.RFC3339)}
 
 	esclient, err := elastic.NewSimpleClient(elastic.SetURL("http://127.0.0.1:9200"))
 	if err != nil {
@@ -77,7 +50,8 @@ func TestGetAlertsFromTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to add notification: %v", err)
 	}
-	alerts, err := alertsource.GetAlertsFromTo(startTs.Add(-90*time.Second), startTs.Add(90*time.Second))
+	alerts, err := alertsource.GetAlertsFromTo(time.Now().Add(-15*time.Second),
+		time.Now().Add(15*time.Second))
 	if err != nil {
 		t.Fatalf("failed to get alerts: %v", err)
 	}

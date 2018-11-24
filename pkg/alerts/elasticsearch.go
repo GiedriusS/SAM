@@ -18,12 +18,11 @@ type notification struct {
 	ExternalURL       string            `json:"externalURL"`
 	GroupLabels       map[string]string `json:"groupLabels"`
 	Receiver          string            `json:"receiver"`
-	Status            string            `json:"status"`
 	Version           string            `json:"version"`
 	GroupKey          string            `json:"groupKey"`
 
 	// Timestamp records when the alert notification was received
-	Timestamp time.Time `json:"@timestamp"`
+	Timestamp string `json:"@timestamp"`
 }
 
 // ElasticSearchSource represents ElasticSearch as a source for alerts.
@@ -49,12 +48,10 @@ func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Lo
 
 // GetAlertsFromTo retrieves the alerts between specified boundaries.
 func (es ElasticSearchSource) GetAlertsFromTo(from, to time.Time) (a []Alert, err error) {
-	query := elastic.NewBoolQuery().Filter(elastic.NewRangeQuery("@timestamp").From(from).To(to))
+	query := elastic.NewRangeQuery("@timestamp").From(from).To(to)
 
-	searchResult, err := es.client.Search().
-		Index(es.index).
-		Type("alert_group").
-		Query(query).Sort("alerts.startsAt", true).
+	searchResult, err := es.client.Search(es.index).
+		Query(query).
 		Do(context.Background())
 
 	if err != nil {
