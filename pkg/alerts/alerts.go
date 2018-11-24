@@ -1,17 +1,9 @@
-/*
-Package alerts has needed things for storing alert information and calculating
-similar alerts.
-
-Honestly, maybe one can make a smarter algorithm but this algorithm at least is simple and understandable.
-It is O(n^2) where n is the number of alerts. Sort all data by StartsAt.
-Go through each alert and go forward while StartAt is equal, and backwards while StartsAt is lower or equal
-to the current one. Only retrieve resolved alerts to reduce the noise.
-*/
+// Package alerts has functions and data types for storing alert information and
+// calculating similar alerts.
 package alerts
 
 import (
 	"crypto/sha256"
-	"sort"
 	"time"
 )
 
@@ -59,59 +51,27 @@ func (a *Alert) Hash() string {
 	return string(h.Sum(nil))
 }
 
-// AugmentedAlerts is a wrapper around retrieved data which implements sort.Interface and
-// stores all information about the current state of alerts.
-type AugmentedAlerts struct {
-	Alerts []Alert
-	sort.Interface
-	LastTimestamp time.Time
-}
-
-// Len is part of sort.Interface for AugmentedAlerts.
-func (aa AugmentedAlerts) Len() int {
-	return len(aa.Alerts)
-}
-
-// Swap is part of sort.Interface for AugmentedAlerts.
-func (aa AugmentedAlerts) Swap(i, j int) {
-	aa.Alerts[i], aa.Alerts[j] = aa.Alerts[j], aa.Alerts[i]
-}
-
-// Less is part of sort.Interface. Sorted by StartsAt.
-func (aa AugmentedAlerts) Less(i, j int) bool {
-	return aa.Alerts[i].Starts().Before(aa.Alerts[j].Starts())
-}
-
-// Merge merges the specified AugmentedAlerts into the current one.
-func (aa *AugmentedAlerts) Merge(src *AugmentedAlerts) error {
-	for _, v := range src.Alerts {
-		aa.Alerts = append(aa.Alerts, v)
-	}
-	aa.LastTimestamp = src.LastTimestamp
-	return nil
-}
-
-// CalculateRelated calculates related alerts in augmented alerts.
-// Invoke it before merging.
-func (aa *AugmentedAlerts) CalculateRelated() error {
-	sort.Sort(*aa)
-	for k, v := range aa.Alerts {
-		now := k
-		for now < len(aa.Alerts) && aa.Alerts[now].Starts() == aa.Alerts[k].Starts() {
-			v.Related[aa.Alerts[now].Hash()]++
-			now++
-		}
-
-		now = k
-		for now >= 0 {
-			v.Related[aa.Alerts[now].Hash()]++
-			now--
-		}
-	}
-	return nil
-}
-
 // AlertSource is an interface for all alerts sources.
 type AlertSource interface {
-	GetAlertsFromTo(status string, StartsAt, EndsAt time.Time) (AugmentedAlerts, error)
+	GetAlertsFromTo(StartsAt, EndsAt time.Time) ([]Alert, error)
+}
+
+// State is the current state of the alerts parser.
+type State struct {
+	Firing []string
+	Alerts map[string]Alert
+}
+
+// AddAlert adds alert to the state if it does not exist already.
+func (s *State) AddAlert(a *Alert) {
+	if _, ok := s.Alerts[a.Hash()]; ok != true {
+		s.Alerts[a.Hash()] = *a
+	}
+}
+
+// UpdateRelated updates the relatedness of an alert with the firing alerts.
+func (s *State) UpdateRelated(alert *Alert) {
+	for _, f := range s.Firing {
+		alert.Related[f]++
+	}
 }

@@ -23,7 +23,7 @@ type notification struct {
 	GroupKey          string            `json:"groupKey"`
 
 	// Timestamp records when the alert notification was received
-	Timestamp string `json:"@timestamp"`
+	Timestamp time.Time `json:"@timestamp"`
 }
 
 // ElasticSearchSource represents ElasticSearch as a source for alerts.
@@ -47,36 +47,34 @@ func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Lo
 	return ElasticSearchSource{index: index, client: client, logger: logger}, nil
 }
 
-// GetAlertsFromTo retrieves the alerts with specified status between specified boundaries.
-func (es ElasticSearchSource) GetAlertsFromTo(status string, from, to time.Time) (AugmentedAlerts, error) {
-	t := elastic.NewTermQuery("status", status)
-	q := elastic.NewBoolQuery().Must(t).
-		Filter(elastic.NewRangeQuery("@timestamp").From(from).To(to))
+// GetAlertsFromTo retrieves the alerts between specified boundaries.
+func (es ElasticSearchSource) GetAlertsFromTo(from, to time.Time) (a []Alert, err error) {
+	query := elastic.NewBoolQuery().Filter(elastic.NewRangeQuery("@timestamp").From(from).To(to))
 
 	searchResult, err := es.client.Search().
 		Index(es.index).
-		Query(q).Sort("alerts.startsAt", true).
+		Type("alert_group").
+		Query(query).Sort("alerts.startsAt", true).
 		Do(context.Background())
 
 	if err != nil {
-		return AugmentedAlerts{}, err
+		return
 	}
 
 	if searchResult.Hits.TotalHits == 0 {
-		return AugmentedAlerts{}, nil
+		return a, nil
 	}
 
-	ret := AugmentedAlerts{}
 	for _, hit := range searchResult.Hits.Hits {
 		var n notification
 		if err := json.Unmarshal(*hit.Source, &n); err != nil {
-			return AugmentedAlerts{}, fmt.Errorf("failed to unmarshal notification: %v", err)
+			return a, fmt.Errorf("failed to unmarshal notification: %v", err)
 		}
 
-		for _, a := range n.Alerts {
-			ret.Alerts = append(ret.Alerts, a)
+		for _, alert := range n.Alerts {
+			a = append(a, alert)
 		}
 	}
 
-	return ret, nil
+	return a, nil
 }
