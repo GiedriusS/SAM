@@ -1,10 +1,7 @@
 package alerts
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
 	"testing"
 	"time"
 
@@ -14,14 +11,6 @@ import (
 // addNotification adds a new notification to a index using the client.
 func addNotification(c *elastic.Client, n *notification, index string) error {
 	_, err := c.Index().Index(index).Type("alert_group").BodyJson(*n).Do(context.Background())
-
-	b, err := json.Marshal(n)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.PerformRequestWithContentType(context.Background(), "POST",
-		fmt.Sprintf("/%s/%s", index, "alert_group"), nil, bytes.NewBuffer(b), "application/json")
 	return err
 }
 
