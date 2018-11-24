@@ -68,6 +68,9 @@ func (s *State) AddAlert(a *Alert) {
 // UpdateRelated updates the relatedness of an alert with the firing alerts.
 func (s *State) UpdateRelated(alert *Alert) {
 	for _, f := range s.Firing {
+		if f == alert.Hash() {
+			continue
+		}
 		alert.Related[f]++
 	}
 }
@@ -84,5 +87,6 @@ func (s *State) ParseAlertStatus(alert *Alert) {
 				newFiring = append(newFiring, v)
 			}
 		}
+		s.Firing = newFiring
 	}
 }
