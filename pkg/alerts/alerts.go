@@ -59,13 +59,18 @@ type AlertSource interface {
 // State is the current state of the alerts parser.
 type State struct {
 	Firing []string
-	Alerts map[string]Alert
+	Alerts map[string]*Alert
+}
+
+// NewState initializes a new State variable.
+func NewState() State {
+	return State{Firing: []string{}, Alerts: make(map[string]*Alert)}
 }
 
 // AddAlert adds alert to the state if it does not exist already.
 func (s *State) AddAlert(a *Alert) {
 	if _, ok := s.Alerts[a.Hash()]; ok != true {
-		s.Alerts[a.Hash()] = *a
+		s.Alerts[a.Hash()] = a
 	}
 }
 
@@ -73,5 +78,20 @@ func (s *State) AddAlert(a *Alert) {
 func (s *State) UpdateRelated(alert *Alert) {
 	for _, f := range s.Firing {
 		alert.Related[f]++
+	}
+}
+
+// ParseAlertStatus parses the alert status and either adds it or removes it from firing.
+func (s *State) ParseAlertStatus(alert *Alert) {
+	newFiring := s.Firing[:0]
+	switch alert.Status {
+	case "firing":
+		s.Firing = append(s.Firing, alert.Hash())
+	case "resolved":
+		for _, v := range s.Firing {
+			if v != alert.Hash() {
+				newFiring = append(newFiring, v)
+			}
+		}
 	}
 }
