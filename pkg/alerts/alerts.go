@@ -9,12 +9,12 @@ import (
 
 // Alert stores the necessary data of one alert.
 type Alert struct {
-	Annotations  map[string]string `json:"annotations"`
-	StartsAt     string            `json:"startsAt"`
-	EndsAt       string            `json:"endsAt"`
-	GeneratorURL string            `json:"generatorURL"`
+	Annotations  map[string]string `json:"annotations,omitempty"`
+	StartsAt     string            `json:"startsAt,omitempty"`
+	EndsAt       string            `json:"endsAt,omitempty"`
+	GeneratorURL string            `json:"generatorURL,omitempty"`
 	Labels       map[string]string `json:"labels"`
-	Status       string            `json:"status"`
+	Status       string            `json:"status,omitempty"`
 	Related      map[string]uint   `json:"-"`
 }
 
