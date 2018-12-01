@@ -45,10 +45,10 @@ func TestGetAlertsFromTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to add alert: %v", err)
 	}
-	t.Logf("waiting 15 seconds for alerts to appear in ES")
+	t.Logf("waiting 30 seconds for alerts to appear in ES")
 	select {
 	case <-time.After(15 * time.Second):
-		t.Logf("15 seconds have passed, trying to query")
+		t.Logf("30 seconds have passed, trying to query")
 	}
 	alerts, err := alertsource.GetAlertsFromTo(startTs, startTs.Add(5*time.Second))
 	if err != nil {
