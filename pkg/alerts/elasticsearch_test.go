@@ -61,6 +61,7 @@ func TestGetAlertsFromTo(t *testing.T) {
 		t.Fatalf("failed to add notification #2: %v", err)
 	}
 
+	t.Logf("waiting 10 seconds until the alerts appear in ES")
 	select {
 	case <-time.After(10 * time.Second):
 		t.Logf("10 seconds passed, trying to query")
