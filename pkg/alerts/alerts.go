@@ -58,15 +58,18 @@ func NewState() State {
 	}
 }
 
-// AddAlert adds alert to the state if it does not exist already.
+// AddAlert adds alert to the state and parses it.
 func (s *State) AddAlert(a *Alert) {
 	if _, ok := s.Alerts[a.Hash()]; ok != true {
 		s.Alerts[a.Hash()] = a
 	}
+
+	s.updateRelated(a)
+	s.parseAlertStatus(a)
 }
 
-// UpdateRelated updates the relatedness of an alert with the firing alerts.
-func (s *State) UpdateRelated(alert *Alert) {
+// updateRelated updates the relatedness of an alert with the firing alerts.
+func (s *State) updateRelated(alert *Alert) {
 	for _, f := range s.Firing {
 		if f == alert.Hash() {
 			continue
@@ -75,8 +78,8 @@ func (s *State) UpdateRelated(alert *Alert) {
 	}
 }
 
-// ParseAlertStatus parses the alert status and either adds it or removes it from firing.
-func (s *State) ParseAlertStatus(alert *Alert) {
+// parseAlertStatus parses the alert status and either adds it or removes it from firing.
+func (s *State) parseAlertStatus(alert *Alert) {
 	newFiring := s.Firing[:0]
 	switch alert.Status {
 	case "firing":
