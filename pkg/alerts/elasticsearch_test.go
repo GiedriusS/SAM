@@ -67,7 +67,7 @@ func TestGetAlertsFromTo(t *testing.T) {
 		t.Logf("20 seconds passed, trying to query")
 	}
 
-	from := startTs
+	from := startTs.Add(-2 * time.Minute)
 	to := startTs.Add(2 * time.Minute)
 	alerts, err := alertsource.GetAlertsFromTo(from, to)
 	if err != nil {
