@@ -7,21 +7,22 @@ import (
 
 // TestProcess tests the overall process of how related alerts are calculated.
 func TestProcess(t *testing.T) {
+	start := time.Now()
 	data := []Alert{
 		Alert{Labels: map[string]string{"d": "e", "q": "z"},
-			StartsAt: time.Now().Format(TimeFormat),
+			StartsAt: start.Format(TimeFormat),
 			Status:   "firing",
 			Related:  make(map[string]uint),
 		},
 		Alert{Labels: map[string]string{"a": "b", "c": "d"},
-			StartsAt: time.Now().Format(TimeFormat),
-			EndsAt:   time.Now().Format(TimeFormat),
+			StartsAt: start.Format(TimeFormat),
+			EndsAt:   start.Format(TimeFormat),
 			Status:   "resolved",
 			Related:  make(map[string]uint),
 		},
 		Alert{Labels: map[string]string{"d": "e", "q": "z"},
-			StartsAt: time.Now().Format(TimeFormat),
-			EndsAt:   time.Now().Add(1 * time.Second).Format(TimeFormat),
+			StartsAt: start.Format(TimeFormat),
+			EndsAt:   start.Add(1 * time.Second).Format(TimeFormat),
 			Status:   "resolved",
 			Related:  make(map[string]uint),
 		},
