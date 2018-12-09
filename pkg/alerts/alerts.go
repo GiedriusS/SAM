@@ -5,8 +5,11 @@ package alerts
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"sort"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // Alert stores the necessary data of one alert.
@@ -67,13 +70,21 @@ func NewState() State {
 }
 
 // AddAlert adds alert to the state and parses it.
-func (s *State) AddAlert(a Alert) {
+func (s *State) AddAlert(a Alert) error {
 	if _, ok := s.Alerts[a.Hash()]; ok != true {
 		s.Alerts[a.Hash()] = a
 	}
 
-	s.updateRelated(&a)
-	s.parseAlertStatus(&a)
+	firing, err := s.parseAlertStatus(&a)
+	if err != nil {
+		return errors.Wrapf(err, "failed to parse alert status")
+	}
+	s.Firing = firing
+	if a.Status != "resolved" {
+		s.updateRelated(&a)
+	}
+
+	return nil
 }
 
 // updateRelated updates the relatedness of an alert with the firing alerts.
@@ -86,20 +97,32 @@ func (s *State) updateRelated(alert *Alert) {
 	}
 }
 
-// parseAlertStatus parses the alert status and either adds it or removes it from firing.
-func (s *State) parseAlertStatus(alert *Alert) {
+// parseAlertStatus parses the alert status and returns the new firing.
+func (s *State) parseAlertStatus(alert *Alert) ([]string, error) {
 	newFiring := []string{}
 
 	switch alert.Status {
 	case "firing":
-		newFiring = append(newFiring, s.Firing...)
+		for _, f := range s.Firing {
+			if f == alert.Hash() {
+				return []string{}, fmt.Errorf("alert is already firing")
+			}
+			newFiring = append(newFiring, f)
+		}
 		newFiring = append(newFiring, alert.Hash())
 	case "resolved":
+		found := false
 		for _, f := range s.Firing {
 			if f != alert.Hash() {
 				newFiring = append(newFiring, f)
+			} else {
+				found = true
 			}
 		}
+		if !found {
+			return []string{}, fmt.Errorf("not found the firing alert")
+		}
 	}
-	s.Firing = newFiring
+
+	return newFiring, nil
 }
