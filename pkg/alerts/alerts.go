@@ -4,6 +4,8 @@ package alerts
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
+	"sort"
 	"time"
 )
 
@@ -31,12 +33,18 @@ const TimeFormat = time.RFC3339
 
 // Hash calculates the alert's hash. Used to identify identical alerts.
 func (a *Alert) Hash() string {
+	keys := []string{}
 	h := sha256.New()
-	for k, v := range a.Labels {
-		h.Write([]byte(k))
-		h.Write([]byte(v))
+
+	for k := range a.Labels {
+		keys = append(keys, k)
 	}
-	return string(h.Sum(nil))
+	sort.Strings(keys)
+	for _, k := range keys {
+		h.Write([]byte(k))
+		h.Write([]byte(a.Labels[k]))
+	}
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 // AlertSource is an interface for all alerts sources.
@@ -80,16 +88,18 @@ func (s *State) updateRelated(alert *Alert) {
 
 // parseAlertStatus parses the alert status and either adds it or removes it from firing.
 func (s *State) parseAlertStatus(alert *Alert) {
-	newFiring := s.Firing[:0]
+	newFiring := []string{}
+
 	switch alert.Status {
 	case "firing":
-		s.Firing = append(s.Firing, alert.Hash())
+		newFiring = append(newFiring, s.Firing...)
+		newFiring = append(newFiring, alert.Hash())
 	case "resolved":
-		for _, v := range s.Firing {
-			if v != alert.Hash() {
-				newFiring = append(newFiring, v)
+		for _, f := range s.Firing {
+			if f != alert.Hash() {
+				newFiring = append(newFiring, f)
 			}
 		}
-		s.Firing = newFiring
 	}
+	s.Firing = newFiring
 }
