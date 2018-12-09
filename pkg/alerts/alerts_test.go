@@ -30,7 +30,7 @@ func TestProcess(t *testing.T) {
 
 	s := NewState()
 	for _, v := range data {
-		s.AddAlert(&v)
+		s.AddAlert(v)
 	}
 
 	if data[1].Related[data[0].Hash()] != 1 {
