@@ -93,7 +93,7 @@ func (s *State) updateRelated(alert *Alert) {
 		if f == alert.Hash() {
 			continue
 		}
-		alert.Related[f]++
+		s.Alerts[alert.Hash()].Related[f]++
 	}
 }
 

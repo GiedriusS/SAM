@@ -36,22 +36,23 @@ func TestProcess(t *testing.T) {
 		}
 	}
 
-	if data[1].Related[data[0].Hash()] != 1 {
+	if s.Alerts[data[1].Hash()].Related[data[0].Hash()] != 1 {
 		t.Fatalf("failed to parse related data: 2nd alert has to be related to the 1st one (got %v)",
-			data[1].Related[data[0].Hash()])
+			s.Alerts[data[1].Hash()].Related[data[0].Hash()])
 	}
 
-	if data[0].Related[data[1].Hash()] == 1 {
+	if s.Alerts[data[0].Hash()].Related[data[1].Hash()] == 1 {
 		t.Fatalf("failed to parse related data: 1st alert must not be related to the 2nd one (got %v)",
 			data[0].Related[data[1].Hash()])
 	}
 
-	if len(data[2].Related) != 0 {
-		t.Fatalf("2nd alert is related to other %v alerts", len(data[2].Related))
+	if len(s.Alerts[data[2].Hash()].Related) != 0 {
+		t.Fatalf("failed to parse related data: 2nd alert must not be related at all (got %v)",
+			len(s.Alerts[data[2].Hash()].Related))
 	}
 
 	if len(s.Firing) != 1 {
-		t.Fatalf("%v alerts are still firing even though it was supposed to be 1", len(s.Firing))
+		t.Fatalf("failed to parse related data: one alert must still be firing (got %v)", len(s.Firing))
 	}
 }
 
