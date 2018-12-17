@@ -3,6 +3,8 @@ package alerts
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TestProcess tests the overall process of how related alerts are calculated.
@@ -56,7 +58,7 @@ func TestProcess(t *testing.T) {
 	}
 }
 
-// TestCollision tests the case when two exact alerts are firing which is invalid.
+// TestCollision tests the case when two exact alerts are firing/resolved which is invalid.
 func TestCollision(t *testing.T) {
 	start := time.Now()
 	data := []Alert{
@@ -68,6 +70,16 @@ func TestCollision(t *testing.T) {
 		Alert{Labels: map[string]string{"foo": "bar"},
 			StartsAt: start.Format(TimeFormat),
 			Status:   "firing",
+			Related:  make(map[string]uint),
+		},
+		Alert{Labels: map[string]string{"foo": "bar"},
+			StartsAt: start.Format(TimeFormat),
+			Status:   "resolved",
+			Related:  make(map[string]uint),
+		},
+		Alert{Labels: map[string]string{"foo": "bar"},
+			StartsAt: start.Format(TimeFormat),
+			Status:   "resolved",
 			Related:  make(map[string]uint),
 		},
 	}
@@ -89,8 +101,12 @@ func TestCollision(t *testing.T) {
 			len(data[1].Related), 0)
 	}
 
-	if len(s.Firing) != 1 {
-		t.Fatalf("%v alerts are firing when it should be %v", len(s.Firing),
-			1)
-	}
+	assert.Equal(t, len(s.Firing), 1, "one alert should be firing")
+
+	err = s.AddAlert(data[2])
+	assert.Nil(t, err, "returned an error when it should not have")
+	assert.Lenf(t, s.Firing, 0, "no alerts should be firing")
+
+	err = s.AddAlert(data[3])
+	assert.NotNil(t, err, "should have returned an error")
 }
