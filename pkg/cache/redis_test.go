@@ -2,10 +2,10 @@ package cache
 
 import (
 	"testing"
-	"time"
 
 	"github.com/GiedriusS/SAM/pkg/alerts"
 	"github.com/go-redis/redis"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRedisSmoke(t *testing.T) {
@@ -16,7 +16,7 @@ func TestRedisSmoke(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to iniate redis client: %v", err)
 	}
-	st := alerts.State{LastUpdated: time.Now()}
+	st := alerts.State{Firing: []string{"a"}}
 	err = rcache.PutState(&st)
 	if err != nil {
 		t.Fatalf("failed to put cache state: %v", err)
@@ -25,7 +25,5 @@ func TestRedisSmoke(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to get cache state: %v", err)
 	}
-	if !retrievedState.LastUpdated.Equal(st.LastUpdated) {
-		t.Fatalf("retrieved and saved states' last updated times are different")
-	}
+	assert.Equal(t, retrievedState.Firing, st.Firing, "should be equal")
 }
