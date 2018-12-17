@@ -13,17 +13,12 @@ func TestRedisSmoke(t *testing.T) {
 		Addr: "127.0.0.1:6379",
 	})
 	rcache, err := NewRedisCache(rclient)
-	if err != nil {
-		t.Fatalf("failed to iniate redis client: %v", err)
-	}
+	assert.Nil(t, err, "should not fail to create a Redis client")
+
 	st := alerts.State{Firing: []string{"a"}}
-	err = rcache.PutState(&st)
-	if err != nil {
-		t.Fatalf("failed to put cache state: %v", err)
-	}
+	assert.Nil(t, rcache.PutState(&st), "should not fail to put state")
+
 	retrievedState, err := rcache.GetState()
-	if err != nil {
-		t.Fatalf("failed to get cache state: %v", err)
-	}
+	assert.Nil(t, err, "should not fail to retrieve state")
 	assert.Equal(t, retrievedState.Firing, st.Firing, "should be equal")
 }
