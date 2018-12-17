@@ -59,7 +59,7 @@ type AlertSource interface {
 type State struct {
 	Firing      []string
 	Alerts      map[string]Alert
-	LastUpdated time.Time
+	lastUpdated time.Time
 }
 
 // NewState initializes a new State variable.
@@ -83,8 +83,14 @@ func (s *State) AddAlert(a Alert) error {
 	if a.Status != "resolved" {
 		s.updateRelated(&a)
 	}
+	s.lastUpdated = time.Now()
 
 	return nil
+}
+
+// GetLastUpdated gets the time when State was last updated.
+func (s *State) GetLastUpdated() time.Time {
+	return s.lastUpdated
 }
 
 // updateRelated updates the relatedness of an alert with the firing alerts.
