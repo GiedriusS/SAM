@@ -45,7 +45,7 @@ func (r *RedisCache) GetState() (alerts.State, error) {
 		return alerts.State{}, errors.Wrapf(err, "failed to get key")
 	}
 
-	ret := alerts.State{}
+	ret := alerts.NewState()
 	err = json.Unmarshal([]byte(val), &ret)
 	if err != nil {
 		return alerts.State{}, errors.Wrapf(err, "failed to unmarshal")

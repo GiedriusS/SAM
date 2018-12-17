@@ -75,8 +75,7 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
 	go func() {
 		for {
 			select {
-			case <-time.After(15 * time.Second):
-			default:
+			case <-time.After(5 * time.Second):
 			}
 			stateLock.Lock()
 			defer stateLock.Unlock()
@@ -93,14 +92,14 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
 					l.Error("failed to add alert", zap.Error(err))
 				}
 			}
+			l.Info("finished getting alerts")
 		}
 	}()
 
 	go func() {
 		for {
 			select {
-			case <-time.After(30 * time.Second):
-			default:
+			case <-time.After(10 * time.Second):
 			}
 			stateLock.Lock()
 			defer stateLock.Unlock()
@@ -111,6 +110,7 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
 				l.Error("failed to put cache", zap.Error(err))
 				continue
 			}
+			l.Info("finished putting cache")
 		}
 	}()
 

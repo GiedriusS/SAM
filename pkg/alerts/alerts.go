@@ -65,7 +65,8 @@ type State struct {
 // NewState initializes a new State variable.
 func NewState() State {
 	return State{Firing: []string{},
-		Alerts: make(map[string]Alert),
+		Alerts:      make(map[string]Alert),
+		lastUpdated: time.Time{},
 	}
 }
 
