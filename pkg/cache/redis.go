@@ -2,7 +2,6 @@ package cache
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/GiedriusS/SAM/pkg/alerts"
 	"github.com/go-redis/redis"
@@ -35,7 +34,6 @@ func (r *RedisCache) PutState(s *alerts.State) error {
 		return errors.Wrapf(err, "failed to marshal state")
 	}
 
-	fmt.Println(string(b))
 	err = r.r.Do("SET", keyName, string(b)).Err()
 	return err
 }
