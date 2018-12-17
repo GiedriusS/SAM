@@ -11,16 +11,17 @@ import (
 
 // API is a wrapper around a HTTP router and supporting data.
 type API struct {
-	r *mux.Router
+	R *mux.Router
 	s *alerts.State
 }
 
 // NewAPI creates a new API object.
 func NewAPI(s *alerts.State) *API {
 	r := mux.NewRouter()
-	a := &API{r: r, s: s}
+	a := &API{R: r, s: s}
 	r.HandleFunc("/hash/{hash}", a.GetAlertByHash)
 	r.HandleFunc("/alert/{name}", a.GetRelated)
+	r.HandleFunc("/lastupdated", a.GetLastUpdated)
 	return a
 }
 
@@ -43,4 +44,9 @@ func (a *API) GetAlertByHash(w http.ResponseWriter, r *http.Request) {
 // GetRelated gets the list of related alerts according to the name and label set.
 func (a *API) GetRelated(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "a")
+}
+
+// GetLastUpdated gets the time when the Cache was last updated.
+func (a *API) GetLastUpdated(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "%v", a.s.GetLastUpdated().Unix())
 }
