@@ -10,21 +10,6 @@ import (
 	"gopkg.in/olivere/elastic.v5"
 )
 
-// This is the type that alertmanager2es uses.
-type notification struct {
-	Alerts            []Alert           `json:"alerts"`
-	CommonAnnotations map[string]string `json:"commonAnnotations"`
-	CommonLabels      map[string]string `json:"commonLabels"`
-	ExternalURL       string            `json:"externalURL"`
-	GroupLabels       map[string]string `json:"groupLabels"`
-	Receiver          string            `json:"receiver"`
-	Version           string            `json:"version"`
-	GroupKey          string            `json:"groupKey"`
-
-	// Timestamp records when the alert notification was received
-	Timestamp string `json:"@timestamp"`
-}
-
 // ElasticSearchSource represents ElasticSearch as a source for alerts.
 type ElasticSearchSource struct {
 	AlertSource
