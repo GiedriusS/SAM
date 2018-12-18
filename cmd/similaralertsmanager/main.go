@@ -64,7 +64,7 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
 		state = newState
 	}
 
-	api := api.NewAPI(&state)
+	api := api.NewAPI(&state, l)
 	srv := &http.Server{
 		Handler: api.R,
 		Addr:    *addr,
