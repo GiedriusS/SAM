@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/imdario/mergo"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gopkg.in/olivere/elastic.v5"
 )
@@ -47,7 +49,7 @@ func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Lo
 }
 
 // GetAlertsFromTo retrieves the alerts between specified boundaries.
-func (es ElasticSearchSource) GetAlertsFromTo(from, to time.Time) (a []Alert, err error) {
+func (es ElasticSearchSource) GetAlertsFromTo(from, to time.Time) (ret []Alert, err error) {
 	query := elastic.NewRangeQuery("@timestamp").From(from).To(to)
 
 	searchResult, err := es.client.Search(es.index).
@@ -59,19 +61,23 @@ func (es ElasticSearchSource) GetAlertsFromTo(from, to time.Time) (a []Alert, er
 	}
 
 	if searchResult.Hits.TotalHits == 0 {
-		return a, nil
+		return ret, nil
 	}
 
 	for _, hit := range searchResult.Hits.Hits {
 		var n notification
 		if err := json.Unmarshal(*hit.Source, &n); err != nil {
-			return a, fmt.Errorf("failed to unmarshal notification: %v", err)
+			return ret, fmt.Errorf("failed to unmarshal notification: %v", err)
 		}
 
 		for _, alert := range n.Alerts {
-			a = append(a, alert)
+			a := NewAlert()
+			if err := mergo.Merge(&a, alert); err != nil {
+				return ret, errors.Wrapf(err, "failed to merge alert")
+			}
+			ret = append(ret, a)
 		}
 	}
 
-	return a, nil
+	return ret, nil
 }

@@ -78,12 +78,12 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
 			case <-time.After(5 * time.Second):
 			}
 			stateLock.Lock()
-			defer stateLock.Unlock()
 
 			l.Info("getting alerts", zap.Time("from", state.GetLastUpdated()), zap.Time("to", time.Now()))
 			alerts, err := esSource.GetAlertsFromTo(state.GetLastUpdated(), time.Now())
 			if err != nil {
 				l.Error("failed to get alerts", zap.Error(err))
+				stateLock.Unlock()
 				continue
 			}
 			for _, a := range alerts {
@@ -93,6 +93,7 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
 				}
 			}
 			l.Info("finished getting alerts")
+			stateLock.Unlock()
 		}
 	}()
 
@@ -102,15 +103,16 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
 			case <-time.After(10 * time.Second):
 			}
 			stateLock.Lock()
-			defer stateLock.Unlock()
 
 			l.Info("putting state")
 			err := rcache.PutState(&state)
 			if err != nil {
 				l.Error("failed to put cache", zap.Error(err))
+				stateLock.Unlock()
 				continue
 			}
 			l.Info("finished putting cache")
+			stateLock.Unlock()
 		}
 	}()
 
