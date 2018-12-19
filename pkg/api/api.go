@@ -29,8 +29,7 @@ func NewAPI(s *alerts.State, logger *zap.Logger) *API {
 
 func (a *API) alertHashWriter(w http.ResponseWriter, r *http.Request, h string) {
 	if data, ok := a.s.Alerts[h]; ok {
-		b := []byte{}
-		err := json.Unmarshal(b, data)
+		b, err := json.Marshal(data)
 		if err != nil {
 			a.l.Error("failed to unmarshal data", zap.Error(err))
 			w.WriteHeader(http.StatusInternalServerError)
