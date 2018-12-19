@@ -28,7 +28,13 @@ func NewAPI(s *alerts.State, logger *zap.Logger) *API {
 }
 
 func (a *API) alertHashWriter(w http.ResponseWriter, r *http.Request, h string) {
-	if data, ok := a.s.Alerts[h]; ok {
+
+}
+
+// GetAlertByHash returns the alert data according to the specified hash.
+func (a *API) GetAlertByHash(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	if data, ok := a.s.Alerts[vars["hash"]]; ok {
 		b, err := json.Marshal(data)
 		if err != nil {
 			a.l.Error("failed to unmarshal data", zap.Error(err))
@@ -41,21 +47,29 @@ func (a *API) alertHashWriter(w http.ResponseWriter, r *http.Request, h string) 
 	}
 }
 
-// GetAlertByHash returns the alert data according to the specified hash.
-func (a *API) GetAlertByHash(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	a.alertHashWriter(w, r, vars["hash"])
-}
-
 // GetRelated gets the list of related alerts according to the name and label set.
 func (a *API) GetRelated(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
 	params := r.URL.Query()
+
 	alert := alerts.NewAlert()
+	alert.Labels["alertname"] = vars["name"]
 	for key, vals := range params {
 		alert.Labels[key] = vals[0]
 	}
 	h := alert.Hash()
-	a.alertHashWriter(w, r, h)
+
+	if data, ok := a.s.Alerts[h]; ok {
+		jsonRelated, err := json.Marshal(data.Related)
+		if err != nil {
+			a.l.Error("failed to unmarshal data", zap.Error(err))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprintf(w, string(jsonRelated))
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }
 
 // GetLastUpdated gets the time when the Cache was last updated.

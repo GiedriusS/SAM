@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/imdario/mergo"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gopkg.in/olivere/elastic.v5"
 )
@@ -71,11 +69,8 @@ func (es ElasticSearchSource) GetAlertsFromTo(from, to time.Time) (ret []Alert, 
 		}
 
 		for _, alert := range n.Alerts {
-			a := NewAlert()
-			if err := mergo.Merge(&a, alert); err != nil {
-				return ret, errors.Wrapf(err, "failed to merge alert")
-			}
-			ret = append(ret, a)
+			alert.Related = make(map[string]uint)
+			ret = append(ret, alert)
 		}
 	}
 
