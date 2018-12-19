@@ -20,7 +20,7 @@ type Alert struct {
 	GeneratorURL string            `json:"generatorURL,omitempty"`
 	Labels       map[string]string `json:"labels"`
 	Status       string            `json:"status,omitempty"`
-	Related      map[string]uint   `json:"-"`
+	Related      map[string]uint   `json:"related,omitempty"`
 }
 
 // NewAlert constructs a new Alert object.
