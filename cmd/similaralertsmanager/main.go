@@ -21,6 +21,8 @@ func main() {
 		esinstances   = kingpin.Flag("elasticsearch", "ElasticSearch address").Required().Short('s').Strings()
 		addr          = kingpin.Flag("addr", "API listen address").Default(":9888").Short('l').String()
 		redisinstance = kingpin.Flag("redis", "Redis address").Required().Short('r').String()
+		cacheinterval = kingpin.Flag("cacheinterval", "Interval in seconds between updates of cache").Default("5").Int()
+		esinterval    = kingpin.Flag("esinterval", "Interval in seconds between parsing new alerts").Default("10").Int()
 	)
 	kingpin.Parse()
 
@@ -41,10 +43,10 @@ func main() {
 			zap.Error(err))
 	}
 
-	runSAM(l, rclient, esclient, addr)
+	runSAM(l, rclient, esclient, addr, cacheinterval, esinterval)
 }
 
-func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
+func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string, cacheint *int, esint *int) {
 	rcache, err := cache.NewRedisCache(r)
 	if err != nil {
 		l.Fatal("failed to initialize new Redis cache", zap.Error(err))
@@ -75,7 +77,7 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
 	go func() {
 		for {
 			select {
-			case <-time.After(5 * time.Second):
+			case <-time.After(*esint * time.Second):
 			}
 			stateLock.Lock()
 
@@ -100,7 +102,7 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string) {
 	go func() {
 		for {
 			select {
-			case <-time.After(10 * time.Second):
+			case <-time.After(*cacheint * time.Second):
 			}
 			stateLock.Lock()
 
