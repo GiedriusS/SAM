@@ -77,7 +77,7 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string, cac
 	go func() {
 		for {
 			select {
-			case <-time.After(*esint * time.Second):
+			case <-time.After(time.Duration(*esint) * time.Second):
 			}
 			stateLock.Lock()
 
@@ -102,7 +102,7 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string, cac
 	go func() {
 		for {
 			select {
-			case <-time.After(*cacheint * time.Second):
+			case <-time.After(time.Duration(*cacheint) * time.Second):
 			}
 			stateLock.Lock()
 
