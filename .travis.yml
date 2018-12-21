@@ -7,9 +7,8 @@ before_install:
   - docker-compose -f ./docker/docker-compose-test.yml up -d
   - ./scripts/wait_until_es_up.sh
   - ./scripts/add_es_template.sh
-script: "go test -v ./... && mkdir bin && go build -o bin/SAM ./..."
+script: "go test -v ./... && mkdir bin && go build -o bin/SAM ./cmd/similaralertsmanager/."
 after_success:
-  - "go build -o bin/SAM ./cmd/similaralertsmanager/."
   - printf "%s" "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - docker build -t sam .
   - docker images
