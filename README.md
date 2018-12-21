@@ -28,9 +28,9 @@ The goal of SAM is to implement a similar kind of functionality that New Relic h
 
 
 # Main use-case
-* Go to http://127.0.0.1:9888/alert/DiskEmpty?dev=sda2&instance=example1 to retrieve related alerts to that label set
-* Then find out: {"d3c96c8359aa53c97154786d3b3fad3df6ac8ba557a64e4f1b782a586c105e6f":2}
-* Go to http://127.0.0.1:9888/hash/d3c96c8359aa53c97154786d3b3fad3df6ac8ba557a64e4f1b782a586c105e6f and you will get back the information about it
+* Go to http://127.0.0.1:9888/alert/DiskEmpty?dev=sda2&instance=example1 to retrieve related alerts to that alert and its labels;
+* Then find out: `{"d3c96c8359aa53c97154786d3b3fad3df6ac8ba557a64e4f1b782a586c105e6f":2}`. This means that the alert with that hash has been firing two times in the past at the same time as this alert;
+* Go to http://127.0.0.1:9888/hash/d3c96c8359aa53c97154786d3b3fad3df6ac8ba557a64e4f1b782a586c105e6f and you will get back the information about it.
 
 # Running
 A Docker image is available with SAM. Pull it down and run it with:
