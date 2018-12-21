@@ -9,7 +9,7 @@ before_install:
   - ./scripts/add_es_template.sh
 script: "go test -v ./... && mkdir bin && go build -o bin/SAM ./cmd/similaralertsmanager/."
 after_success:
-  - printf "%s" "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+  - printf "%s" '${DOCKER_PASSWORD}' | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - docker build -t sam .
   - docker images
   - docker tag sam "${DOCKER_USERNAME}/sam"
