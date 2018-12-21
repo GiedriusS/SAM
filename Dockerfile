@@ -1,7 +1,5 @@
-FROM golang:1.11
+FROM golang:alpine
 
 WORKDIR /app
-ENV SRC_DIR=/go/src/github.com/GiedriusS/SAM
-ADD . $SRC_DIR
-RUN cd $SRC_DIR; go build -o SAM; cp SAM /app/
+ADD bin/sam /app/sam
 ENTRYPOINT ["/app/SAM"]
