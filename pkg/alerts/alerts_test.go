@@ -18,7 +18,6 @@ func TestProcess(t *testing.T) {
 		},
 		Alert{Labels: map[string]string{"a": "b", "c": "d"},
 			StartsAt: start.Format(TimeFormat),
-			EndsAt:   start.Format(TimeFormat),
 			Status:   "firing",
 			Related:  make(map[string]uint),
 		},
@@ -78,4 +77,39 @@ func TestCollision(t *testing.T) {
 	assert.Len(t, s.Firing, 0, "no alerts should be firing")
 
 	assert.NotNil(t, s.AddAlert(data[3]), "should have returned an error")
+}
+
+// TestUnrelated tests the case when two alerts are firing for some time but they are unrelated.
+func TestUnrelated(t *testing.T) {
+	start := time.Now()
+	data := []Alert{
+		Alert{Labels: map[string]string{"foo": "bar"},
+			StartsAt: start.Format(TimeFormat),
+			Status:   "firing",
+			Related:  make(map[string]uint),
+		},
+		Alert{Labels: map[string]string{"foo": "bar"},
+			StartsAt: start.Add(5 * time.Second).Format(TimeFormat),
+			Status:   "resolved",
+			Related:  make(map[string]uint),
+		},
+		Alert{Labels: map[string]string{"bar": "foo"},
+			StartsAt: start.Add(10 * time.Second).Format(TimeFormat),
+			Status:   "firing",
+			Related:  make(map[string]uint),
+		},
+		Alert{Labels: map[string]string{"bar": "foo"},
+			StartsAt: start.Add(15 * time.Second).Format(TimeFormat),
+			Status:   "resolved",
+			Related:  make(map[string]uint),
+		},
+	}
+
+	s := NewState()
+	for _, a := range data {
+		assert.Nil(t, s.AddAlert(a), "adding alert must not error")
+	}
+	assert.Equal(t, len(s.Firing), 0, "no alerts should be firing")
+	assert.Len(t, s.Alerts[data[0].Hash()].Related, 0, "must be unrelated")
+	assert.Len(t, s.Alerts[data[1].Hash()].Related, 0, "must be unrelated")
 }
