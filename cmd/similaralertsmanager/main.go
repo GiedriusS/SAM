@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/GiedriusS/SAM/pkg/alerts"
@@ -71,20 +70,16 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string, cac
 		Addr:    *addr,
 	}
 
-	stateLock := sync.Mutex{}
-
 	go func() {
 		for {
 			select {
 			case <-time.After(time.Duration(*esint) * time.Second):
 			}
-			stateLock.Lock()
 
 			l.Info("getting alerts", zap.Time("from", state.GetLastUpdated()), zap.Time("to", time.Now()))
 			alerts, err := esSource.GetAlertsFromTo(state.GetLastUpdated(), time.Now())
 			if err != nil {
 				l.Error("failed to get alerts", zap.Error(err))
-				stateLock.Unlock()
 				continue
 			}
 			for _, a := range alerts {
@@ -94,7 +89,6 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string, cac
 				}
 			}
 			l.Info("finished getting alerts")
-			stateLock.Unlock()
 		}
 	}()
 
@@ -103,17 +97,13 @@ func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string, cac
 			select {
 			case <-time.After(time.Duration(*cacheint) * time.Second):
 			}
-			stateLock.Lock()
 
-			l.Info("putting state")
 			err := rcache.PutState(&state)
 			if err != nil {
 				l.Error("failed to put cache", zap.Error(err))
-				stateLock.Unlock()
 				continue
 			}
 			l.Info("finished putting cache")
-			stateLock.Unlock()
 		}
 	}()
 

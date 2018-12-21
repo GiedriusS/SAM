@@ -16,8 +16,9 @@ The goal of SAM is to implement a similar kind of functionality that New Relic h
 # Command line arguments
 | Name            | Default value | Purpose                                           | Example               |
 |-----------------|---------------|---------------------------------------------------|-----------------------|
-| --elasticsearch |               | Specify ES instance                               | http://127.0.0.1:1234 |
-| --addr          | :9888         | Specify API listen address                        | 0.0.0.0:1111          |
-| --redis         |               | Specify Redis instance                            | 127.0.0.1:5555        |
-| --cacheinterval | 5             | Specify interval between cache uploads in seconds | 25                    |
-| --esinterval    | 10            | Specify ES check interval in seconds              | 33                    |
+| --elasticsearch |               | ES instance                                       | http://127.0.0.1:1234 |
+| --addr          | :9888         | API listen address                                | 0.0.0.0:1111          |
+| --redis         |               | Redis instance                                    | 127.0.0.1:5555        |
+| --cacheinterval | 5             | Interval between cache uploads in seconds         | 25                    |
+| --esinterval    | 10            | ES check interval in seconds                      | 33                    |
+| --esindex       | alertmanager  | ES index name                                     | foobar                |
