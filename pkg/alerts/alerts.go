@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -60,6 +61,7 @@ type State struct {
 	Firing      []string
 	Alerts      map[string]Alert
 	LastUpdated time.Time
+	m           sync.Mutex
 }
 
 // NewState initializes a new State variable.
@@ -67,11 +69,14 @@ func NewState() State {
 	return State{Firing: []string{},
 		Alerts:      make(map[string]Alert),
 		LastUpdated: time.Time{},
+		m:           sync.Mutex{},
 	}
 }
 
 // AddAlert adds alert to the state and parses it.
 func (s *State) AddAlert(a Alert) error {
+	s.m.Lock()
+	defer s.m.Unlock()
 	if _, ok := s.Alerts[a.Hash()]; ok != true {
 		s.Alerts[a.Hash()] = a
 	}
@@ -91,6 +96,8 @@ func (s *State) AddAlert(a Alert) error {
 
 // GetLastUpdated gets the time when State was last updated.
 func (s *State) GetLastUpdated() time.Time {
+	s.m.Lock()
+	defer s.m.Unlock()
 	return s.LastUpdated
 }
 
