@@ -50,7 +50,7 @@ func NewElasticSearchSource(index string, client *elastic.Client, logger *zap.Lo
 func (es ElasticSearchSource) GetAlertsFromTo(from, to time.Time) (ret []Alert, err error) {
 	query := elastic.NewRangeQuery("@timestamp").From(from).To(to)
 
-	searchResult, err := es.client.Search(es.index).
+	searchResult, err := es.client.Search(fmt.Sprintf("%s-%s", es.index, time.Now().Format("2006.01"))).
 		Query(query).
 		Do(context.Background())
 

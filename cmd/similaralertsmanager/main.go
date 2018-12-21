@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -22,7 +21,8 @@ func main() {
 		addr          = kingpin.Flag("addr", "API listen address").Default(":9888").Short('l').String()
 		redisinstance = kingpin.Flag("redis", "Redis address").Required().Short('r').String()
 		cacheinterval = kingpin.Flag("cacheinterval", "Interval in seconds between updates of cache").Default("5").Int()
-		esinterval    = kingpin.Flag("esinterval", "Interval in seconds between parsing new alerts").Default("10").Int()
+		esInterval    = kingpin.Flag("esinterval", "Interval in seconds between parsing new alerts").Default("10").Int()
+		esIndexName   = kingpin.Flag("esindex", "ElasticSearch index name").Default("alertmanager").Short('i').String()
 	)
 	kingpin.Parse()
 
@@ -43,16 +43,15 @@ func main() {
 			zap.Error(err))
 	}
 
-	runSAM(l, rclient, esclient, addr, cacheinterval, esinterval)
+	runSAM(l, rclient, esclient, addr, cacheinterval, esInterval, esIndexName)
 }
 
-func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string, cacheint *int, esint *int) {
+func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string, cacheint *int, esint *int, esIndex *string) {
 	rcache, err := cache.NewRedisCache(r)
 	if err != nil {
 		l.Fatal("failed to initialize new Redis cache", zap.Error(err))
 	}
-	esSource, err := alerts.NewElasticSearchSource(fmt.Sprintf("alertmanager-%s", time.Now().Format("2006.01")),
-		e, l)
+	esSource, err := alerts.NewElasticSearchSource(*esIndex, e, l)
 	if err != nil {
 		l.Fatal("failed to initialize new ElasticSearch source", zap.Error(err))
 	}
