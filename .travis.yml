@@ -10,7 +10,7 @@ before_install:
 after_success:
   - "mkdir bin"
   - "go build -o ./bin/SAM ./cmd/similaralertsmanager/."
-  - printf "%s" '${DOCKER_PASSWORD}' | docker login -u "${DOCKER_USERNAME}" --password-stdin
+  - printf "%s" "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - docker build -t sam .
   - docker images
   - docker tag sam "${DOCKER_USERNAME}/sam"
