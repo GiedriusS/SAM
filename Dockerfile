@@ -1,5 +1,5 @@
 FROM golang:alpine
 
 WORKDIR /app
-ADD bin/sam /app/sam
+ADD bin/SAM /app/SAM
 ENTRYPOINT ["/app/SAM"]
