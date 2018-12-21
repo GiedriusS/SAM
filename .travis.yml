@@ -7,12 +7,12 @@ before_install:
   - docker-compose -f ./docker/docker-compose-test.yml up -d
   - ./scripts/wait_until_es_up.sh
   - ./scripts/add_es_template.sh
-script:
+after_success:
   - "go build -o bin/SAM cmd/similaralertsmanager/main.go"
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - docker build -t sam .
   - docker images
-  - docker tag sam $DOCKER_USERNAME/sam
-  - docker push $DOCKER_USERNAME/sam:latest
+  - docker tag sam "${DOCKER_USERNAME}/sam"
+  - docker push "${DOCKER_USERNAME}/sam:latest"
 
 email: false
