@@ -27,10 +27,6 @@ func NewAPI(s *alerts.State, logger *zap.Logger) *API {
 	return a
 }
 
-func (a *API) alertHashWriter(w http.ResponseWriter, r *http.Request, h string) {
-
-}
-
 // GetAlertByHash returns the alert data according to the specified hash.
 func (a *API) GetAlertByHash(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
