@@ -3,7 +3,6 @@ package alerts
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -24,8 +23,6 @@ func addNotification(url string, n notification) error {
 }
 
 func TestGetAlertsFromTo(t *testing.T) {
-	indexName := fmt.Sprintf("alertmanager-%s", time.Now().Format("2006.01"))
-
 	startTs := time.Now()
 
 	alert1 := NewAlert()
@@ -48,7 +45,7 @@ func TestGetAlertsFromTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to setup elastic client: %v", err)
 	}
-	alertsource, err := NewElasticSearchSource(indexName, esclient, nil)
+	alertsource, err := NewElasticSearchSource("alertmanager", esclient, nil)
 	if err != nil {
 		t.Fatalf("failed to setup elastic alert source: %v", err)
 	}
