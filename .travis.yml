@@ -8,7 +8,7 @@ before_install:
   - ./scripts/wait_until_es_up.sh
   - ./scripts/add_es_template.sh
 script:
-  - "go build -o bin/SAM ."
+  - "go build -o bin/SAM cmd/similaralertsmanager/main.go"
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker build -t sam .
   - docker images
