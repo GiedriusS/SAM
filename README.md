@@ -1,7 +1,8 @@
 [![Build Status](https://travis-ci.org/GiedriusS/SAM.svg?branch=master)](https://travis-ci.org/GiedriusS/SAM)
+[![Go Report Card](https://goreportcard.com/badge/github.com/GiedriusS/SAM)](https://goreportcard.com/report/github.com/GiedriusS/SAM)
 
 # SAM
-Similar Alerts Manager - provides a way to see what alerts were firing at the same time historically
+Similar Alerts Manager - provides a way to see what alerts were firing at the same time historically. You can find more information [here](https://giedrius.blog/2018/12/29/introducing-sam-similar-alerts-manager-my-side-project/).
 
 # Purpose
 The goal of SAM is to implement a similar kind of functionality that New Relic has when it shows what other alerts were firing around the same time.
