@@ -8,10 +8,10 @@ Similar Alerts Manager - provides a way to see what alerts were firing at the sa
 The goal of SAM is to implement a similar kind of functionality that New Relic has when it shows what other alerts were firing around the same time.
 
 # Features
-* Can show all related alerts of any alert
-* Can show the information an alert according to its hash
+* Shows all related alerts of any alert
+* Shows the information of an alert according to its hash
 * Shows when the internal database was last updated
-* Has a persistence layer through Redis
+* Survives restarts through Redis
 
 
 # Command line arguments
