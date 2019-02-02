@@ -12,7 +12,7 @@ func TestRedisSmoke(t *testing.T) {
 	rclient := redis.NewClient(&redis.Options{
 		Addr: "127.0.0.1:6379",
 	})
-	rcache, err := NewRedisCache(rclient)
+	rcache, err := NewRedisCache(rclient, "SAM")
 	assert.Nil(t, err, "should not fail to create a Redis client")
 
 	st := alerts.State{Firing: []string{"a"}}
