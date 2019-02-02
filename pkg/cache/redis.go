@@ -8,22 +8,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-const keyName = "SAM"
-
 // RedisCache represents a cache that is based on a underlying Redis.
 type RedisCache struct {
 	r *redis.Client
 	Cache
+	key string
 }
 
 // NewRedisCache constructs and returns a new RedisCache.
-func NewRedisCache(r *redis.Client) (RedisCache, error) {
+func NewRedisCache(r *redis.Client, key string) (RedisCache, error) {
 	_, err := r.Ping().Result()
 	if err != nil {
 		return RedisCache{}, errors.Wrapf(err, "failed to ping Redis")
 	}
 
-	return RedisCache{r: r}, nil
+	return RedisCache{r: r, key: key}, nil
 }
 
 // PutState saves the state into Redis.
@@ -34,13 +33,13 @@ func (r *RedisCache) PutState(s *alerts.State) error {
 		return errors.Wrapf(err, "failed to marshal state")
 	}
 
-	err = r.r.Do("SET", keyName, string(b)).Err()
+	err = r.r.Do("SET", r.key, string(b)).Err()
 	return err
 }
 
 // GetState gets the state from Redis.
 func (r *RedisCache) GetState() (alerts.State, error) {
-	val, err := r.r.Get(keyName).Result()
+	val, err := r.r.Get(r.key).Result()
 	if err != nil {
 		return alerts.State{}, errors.Wrapf(err, "failed to get key")
 	}

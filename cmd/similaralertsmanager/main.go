@@ -22,6 +22,7 @@ func main() {
 		cacheinterval = kingpin.Flag("cacheinterval", "Interval in seconds between updates of cache").Default("5").Int()
 		esInterval    = kingpin.Flag("esinterval", "Interval in seconds between parsing new alerts").Default("10").Int()
 		esIndexName   = kingpin.Flag("esindex", "ElasticSearch index name").Default("alertmanager").Short('i').String()
+		rKey          = kingpin.Flag("rediskey", "Redis key name").Default("SAM").Short('k').String()
 	)
 	kingpin.Parse()
 
@@ -42,11 +43,13 @@ func main() {
 			zap.Error(err))
 	}
 
-	runSAM(l, rclient, esclient, addr, cacheinterval, esInterval, esIndexName)
+	runSAM(l, rclient, esclient, addr, cacheinterval, esInterval, esIndexName, rKey)
 }
 
-func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string, cacheint *int, esint *int, esIndex *string) {
-	rcache, err := cache.NewRedisCache(r)
+func runSAM(l *zap.Logger, r *redis.Client, e *elastic.Client, addr *string,
+	cacheint *int, esint *int, esIndex *string, rKey *string) {
+
+	rcache, err := cache.NewRedisCache(r, *rKey)
 	if err != nil {
 		l.Fatal("failed to initialize new Redis cache", zap.Error(err))
 	}

@@ -23,6 +23,7 @@ The goal of SAM is to implement a similar kind of functionality that New Relic h
 | --cacheinterval | 5             | Interval between cache uploads in seconds         | 25                    |
 | --esinterval    | 10            | ES check interval in seconds                      | 33                    |
 | --esindex       | alertmanager  | ES index name                                     | foobar                |
+| --rediskey      | SAM           | Redis key name where data will be saved           | mycoolkey             |
 
 # Architecture
 ![architecture](https://github.com/GiedriusS/SAM/raw/master/SAM.png "SAM architecture")
